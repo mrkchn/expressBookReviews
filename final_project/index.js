@@ -6,16 +6,22 @@ const genl_routes = require('./router/general.js').general;
 
 const app = express();
 
+const checkSession = (ses)=>{
+    const jsonSes = JSON.parse(ses);
+    if (jsonSes.authorization){
+        return jsonSes.authorization;
+    }
+}
+
 app.use(express.json());
 
 app.use("/customer", session({secret:"fingerprint_customer", resave: true, saveUninitialized: true}))
 
 app.use("/customer/auth/*", function auth(req,res,next){
     // Check if user is logged in and has valid access token
-    console.log(req.sessionStore)
-    if (req.session.authorization) {
-        let token = req.session.authorization['accessToken'];
-
+    var activeSession = Object.values(req.sessionStore.sessions).map((ses) => checkSession(ses)).filter((ses) => ses)
+    if (activeSession.length > 0) {
+        let token = activeSession[0]['accessToken'];
         // Verify JWT token
         jwt.verify(token, "access", (err, user) => {
             if (!err) {

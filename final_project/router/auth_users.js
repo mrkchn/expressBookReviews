@@ -51,8 +51,6 @@ regd_users.post("/login", (req,res) => {
         }, 'access', { expiresIn: 60 * 60 });
 
         // Store access token and username in session
-        console.log(accessToken)
-        console.log(username)
         req.session.authorization = {
             accessToken, username
         }
@@ -65,7 +63,8 @@ regd_users.post("/login", (req,res) => {
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
     // Check if user is logged in and has valid access token
-    books[req.params.isbn]["reviews"].push({"username": req.session.username, "review": req.body.review})
+    books[req.params.isbn]["reviews"][req.username] = req.body.review;
+    res.send(books[req.params.isbn])
 });
 
 
