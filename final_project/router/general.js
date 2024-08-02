@@ -1,4 +1,5 @@
 const express = require('express');
+
 let books = require("./booksdb.js");
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
@@ -25,34 +26,49 @@ public_users.post("/register", (req,res) => {
 
 // Get the book list available in the shop
 public_users.get('/',function (req, res) {
-    res.send(JSON.stringify(books, null, 4) + "\n")
+    const get_data = new Promise((resolve, reject) => {
+        resolve(res.send(JSON.stringify(books, null, 4) + "\n"));
+    });
+    get_data.then(() => console.log("get books resolved"));
+
 });
+
 
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn',function (req, res) {
-    res.send(JSON.stringify(books[req.params.isbn], null, 4) + "\n")
+    const get_data = new Promise((resolve, reject) => {
+        resolve(res.send(JSON.stringify(books[req.params.isbn], null, 4) + "\n"));
+    });
+    get_data.then(() => console.log("get isbn resolved"));
+
  });
   
 // Get book details based on author
 public_users.get('/author/:author',function (req, res) {
-    var booksByAuthor = new Array();
-    Object.entries(books).forEach(([k,v]) => {
-        if (v.author === req.params.author){
-            booksByAuthor.push(v);
-        }
-    })
-    res.send(JSON.stringify(booksByAuthor, null, 4) + "\n")
+    const get_data = new Promise((resolve, reject) => {
+        var booksByAuthor = new Array();
+        Object.entries(books).forEach(([k,v]) => {
+            if (v.author === req.params.author){
+                booksByAuthor.push(v);
+            }
+        })
+        resolve(res.send(JSON.stringify(booksByAuthor, null, 4) + "\n"));
+    });
+    get_data.then(() => console.log("get books by author resolved"));
 });
 
 // Get all books based on title
 public_users.get('/title/:title',function (req, res) {
-    var booksByTitle = new Array();
-    Object.entries(books).forEach(([k,v]) => {
-        if (v.title === req.params.title){
-            booksByTitle.push(v);
-        }
-    })
-    res.send(JSON.stringify(booksByTitle, null, 4) + "\n")
+    const get_data = new Promise((resolve, reject) => {
+        var booksByTitle = new Array();
+        Object.entries(books).forEach(([k,v]) => {
+            if (v.title === req.params.title){
+                booksByTitle.push(v);
+            }
+        })
+        resolve(res.send(JSON.stringify(booksByTitle, null, 4) + "\n"));
+    });
+    get_data.then(() => console.log("get books by title resolved"));
 });
 
 //  Get book review
