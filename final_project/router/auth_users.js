@@ -18,7 +18,6 @@ const isValid = (username)=>{ //returns boolean
     }
 }
 
-
 // Check if the user with the given username and password exists
 const authenticatedUser = (username, password) => {
     // Filter the users array for any user with the same username and password
@@ -47,14 +46,14 @@ regd_users.post("/login", (req,res) => {
     if (authenticatedUser(username, password)) {
         // Generate JWT access token
         let accessToken = jwt.sign({
-            data: password
+            data: username
         }, 'access', { expiresIn: 60 * 60 });
 
         // Store access token and username in session
         req.session.authorization = {
             accessToken, username
         }
-        return res.status(200).send("User successfully logged in\n");
+        return res.status(200).send("\n" + username + " successfully logged in\n");
     } else {
         return res.status(208).json({ message: "Invalid Login. Check username and password" });
     }
@@ -63,8 +62,20 @@ regd_users.post("/login", (req,res) => {
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
     // Check if user is logged in and has valid access token
-    books[req.params.isbn]["reviews"][req.username] = req.body.review;
+    books[req.params.isbn]["reviews"][req.user.data] = req.body.review;
     res.send(books[req.params.isbn])
+});
+
+// Delete a book review
+regd_users.delete("/auth/review/:isbn", (req, res) => {
+    // Check if user is logged in and has valid access token
+    delete books[req.params.isbn]["reviews"][req.user.data];
+    res.send(books[req.params.isbn])
+});
+
+// Get logged in user
+regd_users.get("/auth/whoami/", (req, res) => {
+    res.send(req.user.data)
 });
 
 

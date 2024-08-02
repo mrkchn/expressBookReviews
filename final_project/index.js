@@ -6,22 +6,35 @@ const genl_routes = require('./router/general.js').general;
 
 const app = express();
 
-const checkSession = (ses)=>{
-    const jsonSes = JSON.parse(ses);
-    if (jsonSes.authorization){
-        return jsonSes.authorization;
-    }
+const sessionStoreToDict = (sessionStore) => {
+    const jsonSessions = Object.values(sessionStore.sessions).map((obj) => JSON.parse(obj));
+    var tokensDict = [];
+    jsonSessions.forEach((jsonSess) => {
+        if ("authorization" in jsonSess) {
+            tokensDict.push([jsonSess.authorization.username, jsonSess.authorization.accessToken]);
+        }
+    });
+    return Object.fromEntries(tokensDict)
 }
 
 app.use(express.json());
 
-app.use("/customer", session({secret:"fingerprint_customer", resave: true, saveUninitialized: true}))
+app.use("/customer", session({
+    secret:"yabba-dabba-doo", 
+    resave: false, 
+    saveUninitialized: true,
+    cookie: {secure: false}
+}))
 
 app.use("/customer/auth/*", function auth(req,res,next){
     // Check if user is logged in and has valid access token
-    var activeSession = Object.values(req.sessionStore.sessions).map((ses) => checkSession(ses)).filter((ses) => ses)
-    if (activeSession.length > 0) {
-        let token = activeSession[0]['accessToken'];
+    const tokensDict = sessionStoreToDict(req.sessionStore)
+    console.log(tokensDict)
+    // req.session does not have the json web token, which makes it impossible to identify which user is logged in.
+    // I believe this is because I'm behind a proxy, so the session is not saved.
+    console.log(req.session)
+    if (tokensDict){
+        let token = Object.values(tokensDict)[0];
         // Verify JWT token
         jwt.verify(token, "access", (err, user) => {
             if (!err) {
